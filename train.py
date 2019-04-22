@@ -37,13 +37,13 @@ for step in range(num_steps):
 
     if step % display_step == 0:
         rand_idx = np.random.randint(len(test_x), size=1024)
-        batch_x = test_x[rand_idx]; 
-        batch_y = test_y[rand_idx]
+        test_batch_x = test_x[rand_idx]; 
+        test_batch_y = test_y[rand_idx]
         print('train_labels:', batch_y[:50])   
-        print('test_labels:', batch_y[:50])
+        print('test_labels:', test_batch_y[:50])
 
         ops = [model.loss, model.acc, model.preds]
-        test_loss, test_acc, test_preds = sess.run(ops, feed_dict={model.x: batch_x, model.y: batch_y})
+        test_loss, test_acc, test_preds = sess.run(ops, feed_dict={model.x: test_batch_x, model.y: test_batch_y})
 
         losses.append(test_loss); accs.append(test_acc)
         running_loss = np.mean(losses[-20:]); running_acc = np.mean(accs[-20:])
@@ -54,10 +54,10 @@ for step in range(num_steps):
             % (step, acc, loss, test_acc, test_loss, running_acc, running_loss))
 
     if step % save_step == 0:
-        save_model()
+        save_model(saver, sess)
 
 
-save_model()
+save_model(saver, sess)
 
 sess.close()
 

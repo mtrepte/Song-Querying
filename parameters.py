@@ -2,12 +2,12 @@ LR = .01
 beta1 = .9
 beta2 = .999
 decay_LR = True
-decay_LR_step = 1000
+decay_LR_step = 2000
 
-dropout_rate = .3
-L2_reg = 0.001
+dropout_rate = .0
+L2_reg = 0.000
 
-batch_size = 128
+batch_size = 256
 num_classes = 5
 
 num_steps = 100000

@@ -2,13 +2,14 @@ import json
 import random
 
 import numpy as np
+import librosa
 
 from parameters import *
 from data import *
 from log import *
 
 def get_data():
-    data_path = 'data/spectrograms/all/'
+    data_path = 'data/spectrograms/sample/'
     labels_path = 'data/labels.json'
 
     old_to_new_label_map = {4:0, 9:1, 33:2, 0:3, 20:4, 11:5}
@@ -30,6 +31,7 @@ def get_data():
                 song = song[:,:cutoff_length]
                 # song = np.log(song + 1e-7)
                 # song = (song - np.mean(song)) / (np.std(song)+1e-7)
+                song = librosa.power_to_db(song, ref=np.max)
                 songs.append(song)
                 label = old_to_new_label_map[label]
                 labels.append(label)
@@ -69,6 +71,10 @@ def get_data():
     num_songs = len(songs)
     print('using', str(num_songs), 'songs\n')
 
+    perm = np.random.permutation(len(songs))
+    songs = songs[perm]
+    labels = labels[perm]
+
     index = int(num_songs * train_percentile)
     train_x = songs[:index]
     train_y = labels[:index]
@@ -77,6 +83,6 @@ def get_data():
 
     return train_x, train_y, test_x, test_y
 
-def save_model():
+def save_model(saver, sess):
     save_dir = log_dir + '/saved/'
     saver.save(sess, save_dir+'model.ckpt')

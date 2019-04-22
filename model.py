@@ -10,8 +10,8 @@ class Model():
         self.y = tf.placeholder(tf.int64, shape=(None,))
 
         # First Layer
-        w1 = tf.Variable(tf.truncated_normal([4, 128, 1, 128], stddev=0.1, dtype=tf.float32))
-        b1 = tf.Variable(tf.constant(0.0, shape=[128], dtype=tf.float32))
+        w1 = tf.Variable(tf.truncated_normal([4, 128, 1, 256], stddev=0.1, dtype=tf.float32))
+        b1 = tf.Variable(tf.constant(0.0, shape=[256], dtype=tf.float32))
 
         conv = tf.nn.conv2d(self.x, w1, strides=[1, 10000, 3, 1], padding='SAME')
         print('conv layer shape:', conv.shape)
@@ -20,13 +20,13 @@ class Model():
         print('pool layer shape:', pool.shape)
 
         # Second Layer
-        w2 = tf.Variable(tf.truncated_normal([4, 1, 128, 256], stddev=0.1, dtype=tf.float32))
-        b2 = tf.Variable(tf.constant(0.0, shape=[256], dtype=tf.float32))
+        w2 = tf.Variable(tf.truncated_normal([4, 1, 256, 512], stddev=0.1, dtype=tf.float32))
+        b2 = tf.Variable(tf.constant(0.0, shape=[512], dtype=tf.float32))
 
         conv = tf.nn.conv2d(pool, w2, strides=[1, 4, 4, 1], padding='SAME')
         print('conv layer shape:', conv.shape)
         relu = tf.nn.relu(tf.nn.bias_add(conv, b2))
-        pool = tf.nn.max_pool(relu, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+        pool = tf.nn.max_pool(relu, ksize=[1, 4, 4, 1], strides=[1, 4, 4, 1], padding='SAME')
         print('pool layer shape:', pool.shape)
 
         # Flatten
@@ -36,13 +36,19 @@ class Model():
         print('flatten layer shape:', flatten_dim)
 
         # Third Layer
-        w3 = tf.Variable(tf.truncated_normal([flatten_dim, 256], stddev=0.1, dtype=tf.float32))
-        b3 = tf.Variable(tf.constant(0.1, shape=[256], dtype=tf.float32))
+        w3 = tf.Variable(tf.truncated_normal([flatten_dim, 512], stddev=0.1, dtype=tf.float32))
+        b3 = tf.Variable(tf.constant(0.1, shape=[512], dtype=tf.float32))
         dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w3) + b3), rate=dropout_rate)
         print('dense layer shape:', dense.shape)
 
         # Fourth Layer
-        w4 = tf.Variable(tf.truncated_normal([256, num_classes], stddev=0.1, dtype=tf.float32))
+        w3 = tf.Variable(tf.truncated_normal([flatten_dim, 128], stddev=0.1, dtype=tf.float32))
+        b3 = tf.Variable(tf.constant(0.1, shape=[128], dtype=tf.float32))
+        dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w3) + b3), rate=dropout_rate)
+        print('dense layer shape:', dense.shape)
+
+        # Fifth Layer
+        w4 = tf.Variable(tf.truncated_normal([128, num_classes], stddev=0.1, dtype=tf.float32))
         b4 = tf.Variable(tf.constant(0.1, shape=[num_classes], dtype=tf.float32))
         logits = tf.matmul(dense, w4) + b4
         print('dense layer shape:', logits.shape, '\n')
