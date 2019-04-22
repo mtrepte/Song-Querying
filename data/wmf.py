@@ -6,7 +6,7 @@ import numpy as np
 import numpy
 
 # read in triples of user/artist/playcount from the input dataset
-data = pandas.read_table("train_triplets.txt", 
+data = pandas.read_table('metadata/train_triplets.txt', 
                          usecols=[0, 1, 2], 
                          names=['user', 'artist', 'plays'])
 
