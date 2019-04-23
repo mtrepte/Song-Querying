@@ -1,5 +1,7 @@
 data/spectrograms/sample/
 data/spectrograms/all/
+data/spectrograms/small/
 data/metadata/
 logs/
 data/audio/
+data/usage_embs.json

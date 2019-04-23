@@ -39,8 +39,8 @@ for step in range(num_steps):
         rand_idx = np.random.randint(len(test_x), size=1024)
         test_batch_x = test_x[rand_idx]; 
         test_batch_y = test_y[rand_idx]
-        print('train_labels:', batch_y[:50])   
-        print('test_labels:', test_batch_y[:50])
+        print_log('train_labels:', batch_y[:50])   
+        print_log('test_labels:', test_batch_y[:50])
 
         ops = [model.loss, model.acc, model.preds]
         test_loss, test_acc, test_preds = sess.run(ops, feed_dict={model.x: test_batch_x, model.y: test_batch_y})
@@ -48,8 +48,8 @@ for step in range(num_steps):
         losses.append(test_loss); accs.append(test_acc)
         running_loss = np.mean(losses[-20:]); running_acc = np.mean(accs[-20:])
 
-        print('train_preds:', preds[:50])
-        print('test_preds:', test_preds[:50])
+        print_log('train_preds:', preds[:50])
+        print_log('test_preds:', test_preds[:50])
         print_log('\nStep: %.0f\n Train Acc: %.3f, Train Loss: %.3f\n Test Acc: %.3f, Test Loss: %.3f \n Running Test Acc: %.3f, Running Test Loss: %.3f\n' 
             % (step, acc, loss, test_acc, test_loss, running_acc, running_loss))
 

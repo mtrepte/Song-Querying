@@ -16,6 +16,9 @@ save_step = 100
 
 train_percentile = .8
 
+# These don't seem to work
+log_spectrograms = False
+standard_normalize = False
 
 
 blacklist = set(['blacklist'])
