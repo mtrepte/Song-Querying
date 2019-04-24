@@ -9,17 +9,20 @@ from data import *
 from log import *
 
 def get_data():
-    songs, labels = get_all_data()
-    songs, labels = filter_data(songs, labels)
-    songs, labels = preprocess_data(songs, labels)
+    songs, labels, names = get_all_data()
+    songs, labels, names = filter_data(songs, labels, names)
+    songs, labels, names = preprocess_data(songs, labels, names)
+    embs = get_usage_embs(names)
 
     index = int(len(songs) * train_percentile)
     train_x = songs[:index]
     train_y = labels[:index]
+    train_embs = embs[:index]
     test_x = songs[index:]
     test_y = labels[index:]
+    test_embs = embs[index:]
 
-    return train_x, train_y, test_x, test_y
+    return train_x, train_y, test_x, test_y, train_embs, test_embs
 
 def get_all_data():
     data_path = 'data/spectrograms/all/'
@@ -39,7 +42,7 @@ def get_all_data():
         song_label_pairs = json.load(f)
     song_label_pairs = list(song_label_pairs.items())
 
-    songs = []; labels = []
+    songs = []; labels = []; names = []
     for song_name, label in song_label_pairs:
         song_name = song_name[:-3] + 'npy'
         if song_name not in valid_songs:
@@ -49,6 +52,7 @@ def get_all_data():
             songs.append(song)
             label = old_to_new_label[label]
             labels.append(label)
+            names.append(song_name)
         except:
             pass
         if count % 10000 == 0:
@@ -57,18 +61,18 @@ def get_all_data():
 
     print('using', len(songs), 'songs')
 
-    return songs, labels
+    return songs, labels, names
 
-def filter_data(songs, labels):
+def filter_data(songs, labels, names):
     num_in_one_class_cap = 4400
     # num_in_one_class_cap = 50
 
     cutoff_length = 300
     label_counts = {}
 
-    filtered_songs = []; filtered_labels = []
+    filtered_songs = []; filtered_labels = []; filtered_names = []
     for i in range(len(songs)):
-        song = songs[i]; label = labels[i]
+        song = songs[i]; label = labels[i]; name = names[i]
         if label_counts.get(label, 0) >= num_in_one_class_cap:
             continue
         if label == 5: # Throw-out the least common genre
@@ -77,17 +81,19 @@ def filter_data(songs, labels):
             song = song[:,:cutoff_length]
             filtered_songs.append(song)
             filtered_labels.append(label)
+            filtered_names.append(name)
             label_counts[label] = label_counts.get(label, 0) + 1
 
-    print('class distribution:', label_counts)
+    print_log('class distribution:', label_counts)
 
     songs = np.array(filtered_songs)
     songs = songs[:,:,:,np.newaxis]
     labels = np.array(filtered_labels)
+    names = np.array(filtered_names)
 
-    return songs, labels
+    return songs, labels, names
 
-def preprocess_data(songs, labels):
+def preprocess_data(songs, labels, names):
     if log_spectrograms:
         songs = np.log(songs + 1e-7)
     if standard_normalize:
@@ -96,8 +102,27 @@ def preprocess_data(songs, labels):
     perm = np.random.permutation(len(songs))
     songs = songs[perm]
     labels = labels[perm]
+    names = names[perm]
 
-    return songs, labels
+    return songs, labels, names
+
+def get_usage_embs(names):
+    emb_path = 'data/usage_embs.json'
+
+    if not train_with_usage_embs:
+        return np.zeros((len(names), 32), dtype=np.float32)
+
+    with open(emb_path) as f:
+        song_to_usage_emb = json.load(f)
+
+    embs = []
+    for song_name in names:
+        song_name = song_name[:-3] + 'mpy'
+        emb = eval(song_to_usage_emb[song_name])
+        embs.append(emb)
+    embs = np.array(embs)
+
+    return embs
 
 def save_model(saver, sess):
     save_dir = log_dir + '/saved/'

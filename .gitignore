@@ -5,3 +5,4 @@ data/metadata/
 logs/
 data/audio/
 data/usage_embs.json
+__pycache__/
