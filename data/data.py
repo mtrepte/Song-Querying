@@ -3,7 +3,7 @@ import os
 import json
 
 def get_id_to_mp3():
-	id_to_mp3 = cP.load(open('data/MSD_id_to_7D_id.pkl', 'r'))
+	id_to_mp3 = cP.load(open('metadata/MSD_id_to_7D_id.pkl', 'r'))
 	return id_to_mp3
 
 def get_mp3_to_id():
@@ -12,7 +12,7 @@ def get_mp3_to_id():
 	return mp3_to_id
 
 def get_id_to_tag():
-	id_to_tag = cP.load(open('data/msd_id_to_tag_vector.cP','r')) 
+	id_to_tag = cP.load(open('metadata/msd_id_to_tag_vector.cP','r')) 
 	return id_to_tag
 
 def get_id_to_latent_factor():
@@ -20,7 +20,7 @@ def get_id_to_latent_factor():
 	# TODO: finish
 
 def get_id_to_song():
-	file = open('data/unique_tracks.txt', 'r')
+	file = open('metadata/unique_tracks.txt', 'r')
 	id_to_song = {}
 
 	for line in file:
@@ -31,7 +31,7 @@ def get_id_to_song():
 	return id_to_song
 
 def get_TPS_id_to_last_fm_id():
-	file = open('data/unique_tracks.txt', 'r')
+	file = open('metadata/unique_tracks.txt', 'r')
 	TPS_id_to_last_fm_id = {}
 
 	for line in file:
@@ -44,35 +44,27 @@ def get_TPS_id_to_last_fm_id():
 def get_all_ids():
 	TPS_id_to_last_fm_id = get_TPS_id_to_last_fm_id()
 
-	num_songs = 100000000
-	with open('data/usage_data.txt', 'r') as f:
+	with open('metadata/usage_data.txt', 'r') as f:
 		TPS_ids = []
 		for i, line in enumerate(f):
-			if i > num_songs:
-				break
 			user_id, TPS_id, play_count = line.split("\t")
 			last_fm_id = TPS_id_to_last_fm_id[TPS_id]
 			TPS_ids.append(last_fm_id)
 		
-	with open('data/msd_id_to_tag_vector.cP', 'r') as f:
+	with open('metadata/msd_id_to_tag_vector.cP', 'r') as f:
 		last_fm_ids = []
 		for i, line in enumerate(f):
-			if i > num_songs:
-				break
 			if line[:4] == 'tbsS':
 				last_fm_id = line[5:-2]
 				last_fm_ids.append(last_fm_id)
 
-	# print('TPS_ids:', TPS_ids[:10])
-	# print('last_fm_ids:', last_fm_ids[:10])
-
 	TPS_ids = set(TPS_ids)
 	last_fms_ids = set(last_fm_ids)
-	print 'num songs with usage data:', str(len(TPS_ids))
-	print 'num songs with audio tags:', str(len(last_fm_ids))
+	print('num songs with usage data:', str(len(TPS_ids)))
+	print('num songs with audio tags:', str(len(last_fm_ids)))
 
 	intersected_ids = set(TPS_ids).intersection(set(last_fm_ids))
-	print 'num songs with both:', str(len(intersected_ids))
+	print('num songs with both:', str(len(intersected_ids)))
 
 	return intersected_ids
 
@@ -87,7 +79,7 @@ def get_song_paths():
 	song_paths = []
 	for root, dirs, files in os.walk(src_path):
 		path = root.split(os.sep)
-		print 'path:', root, 'dirs:', dirs
+		print('path:', root, 'dirs:', dirs)
 		for file in files:
 			if file[-4:] == '.mp3':
 				key = file[:-9]
@@ -95,7 +87,7 @@ def get_song_paths():
 				key = key.replace('.', '')
 				song_id = mp3_to_id[key]
 				if song_id in ids:
-					print 'count: ', count 
+					print('count: ', count )
 					count += 1
 					song_paths.append(root+'/'+file)
 
@@ -108,14 +100,13 @@ def create_song_path_file():
 		for path in paths:
 			f.write(path+'\n')
 
-
-def get_genre_ids_to_songs():
+def get_genres_to_song_ids():
 	ids = get_all_ids()
 	id_to_tag = get_id_to_tag()
 
 	genres = [4, 9, 33, 0, 20, 11]
 	genre_count = {}
-	genre_id_to_songs = {}
+	genre_to_song_ids = {}
 	count = 0
 	for id in ids:
 		tag = id_to_tag[id]
@@ -133,35 +124,53 @@ def get_genre_ids_to_songs():
 
 		if valid:
 			genre_count[matched_genre] = genre_count.get(matched_genre, 0) + 1
-			genre_id_to_songs[matched_genre] = genre_id_to_songs.get(matched_genre, []) + [id]
+			genre_to_song_ids[matched_genre] = genre_to_song_ids.get(matched_genre, []) + [id]
 		count += 1
 
 	# Remove half of the rock songs
 	genre_count[0] //= 2
-	genre_id_to_songs[0] = genre_id_to_songs[0][:genre_count[0]]
+	genre_to_song_ids[0] = genre_to_song_ids[0][:genre_count[0]]
 
 	print('genre counts:', genre_count)
 
-	return genre_id_to_songs
+	return genre_to_song_ids
 
 def save_genre_songs_to_ids():
-	path = 'sample/'
+	path = ''
 
-	genre_id_to_songs = get_genre_ids_to_songs()
+	genre_to_song_ids = get_genres_to_song_ids()
 	ids_to_mp3s = get_id_to_mp3()
 
-	genre_songs_to_id = {}
-	for id in genre_id_to_songs:
-		genre_songs = genre_id_to_songs[id]
-		for song in genre_songs:
-			mp3 = ids_to_mp3s[song]
-			filename = mp3 + '.mpy'
-			genre_songs_to_id[path + filename] = id
+	songs_to_genre = {}
+	for genre in genre_to_song_ids:
+		song_ids = genre_to_song_ids[genre]
+		for song_id in song_ids:
+			song = ids_to_mp3s[song_id]
+			song = song + '.mpy'
+			songs_to_genre[path + song] = genre
 
 	filename = 'genre_song_labels.json'
 	print('saving:', filename)
 	with open(filename, 'w') as f:
-		json.dump(genre_songs_to_id, f)
+		json.dump(songs_to_genre, f)
 
 
-save_genre_songs_to_ids()
+def get_song_to_usage_emb():
+	id_to_usage_emb = cP.load(open('metadata/id_to_usage_emb.pkl', 'r'))
+	ids_to_mp3s = get_id_to_mp3()
+
+	song_to_usage_emb = {}
+	for song_id in id_to_usage_emb:
+		emb = id_to_usage_emb[song_id]
+		song = ids_to_mp3s[song_id]
+		song = song + '.mpy'
+
+		song_to_usage_emb[song] = str(emb)
+
+	filename = 'usage_embs.json'
+	print('saving:', filename)
+	with open(filename, 'w') as f:
+		json.dump(song_to_usage_emb, f)
+
+
+get_song_to_usage_emb()
