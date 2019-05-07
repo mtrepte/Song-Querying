@@ -25,32 +25,22 @@ def get_data():
     return train_x, train_y, test_x, test_y, train_embs, test_embs
 
 def get_all_data():
-    data_path = 'data/spectrograms/all/'
-    # data_path = 'data/spectrograms/sample/'
-    labels_path = 'data/genre_labels.json'
-    songs_path = 'data/genre_song_names.txt'
+    # data_path = 'data/datasets/goodspecs/'
+    # data_path = 'data/datasets/all/'
+    data_path = 'data/datasets/sample/'
+    labels_path = 'data/song_to_label.json'
 
-    old_to_new_label = {4:0, 9:1, 33:2, 0:3, 20:4, 11:5}
     count = 0
-
-    valid_songs = set()
-    with open(songs_path) as f:
-        for line in f:
-            valid_songs.add(line.replace('\n', ''))
-
     with open(labels_path) as f:
         song_label_pairs = json.load(f)
     song_label_pairs = list(song_label_pairs.items())
+    song_label_pairs = song_label_pairs[:20000]
 
     songs = []; labels = []; names = []
     for song_name, label in song_label_pairs:
-        song_name = song_name[:-3] + 'npy'
-        if song_name not in valid_songs:
-            continue
         try:
-            song = np.load(data_path + song_name)
+            song = np.load(data_path + song_name + '.npy')
             songs.append(song)
-            label = old_to_new_label[label]
             labels.append(label)
             names.append(song_name)
         except:
@@ -64,25 +54,19 @@ def get_all_data():
     return songs, labels, names
 
 def filter_data(songs, labels, names):
-    num_in_one_class_cap = 4400
-    # num_in_one_class_cap = 50
-
     cutoff_length = 300
-    label_counts = {}
+    label_counts = np.zeros(num_classes)
 
     filtered_songs = []; filtered_labels = []; filtered_names = []
     for i in range(len(songs)):
         song = songs[i]; label = labels[i]; name = names[i]
-        if label_counts.get(label, 0) >= num_in_one_class_cap:
-            continue
-        if label == 5: # Throw-out the least common genre
-            continue
+        label = np.array(eval(label))
         if song.shape[1] >= cutoff_length:
             song = song[:,:cutoff_length]
             filtered_songs.append(song)
             filtered_labels.append(label)
             filtered_names.append(name)
-            label_counts[label] = label_counts.get(label, 0) + 1
+            label_counts += label
 
     print_log('class distribution:', label_counts)
 
@@ -107,7 +91,7 @@ def preprocess_data(songs, labels, names):
     return songs, labels, names
 
 def get_usage_embs(names):
-    emb_path = 'data/usage_embs.json'
+    emb_path = 'data/song_to_usage_emb.json'
 
     if not train_with_usage_embs:
         return np.zeros((len(names), 32), dtype=np.float32)
@@ -117,13 +101,8 @@ def get_usage_embs(names):
 
     embs = []
     for song_name in names:
-        song_name = song_name[:-3] + 'mpy'
         emb = eval(song_to_usage_emb[song_name])
         embs.append(emb)
     embs = np.array(embs)
 
     return embs
-
-def save_model(saver, sess):
-    save_dir = log_dir + '/saved/'
-    saver.save(sess, save_dir+'model.ckpt')

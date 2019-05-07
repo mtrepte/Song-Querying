@@ -1,6 +1,7 @@
 import cPickle as cP
 import os
 import json
+from collections import Counter
 
 def get_id_to_mp3():
 	id_to_mp3 = cP.load(open('metadata/MSD_id_to_7D_id.pkl', 'r'))
@@ -100,13 +101,75 @@ def create_song_path_file():
 		for path in paths:
 			f.write(path+'\n')
 
-def get_genres_to_song_ids():
+def get_label_counts():
 	ids = get_all_ids()
 	id_to_tag = get_id_to_tag()
 
+	label_counts = {}
+	for song_id in ids:
+		tag = id_to_tag[song_id]
+		for i, boolean in enumerate(tag):
+			if boolean[0]:
+				label_counts[i] = label_counts.get(i, 0) + 1
+
+	print(label_counts)
+
+def save_song_to_label():
+	ids = get_all_ids()
+	id_to_tag = get_id_to_tag()
+	id_to_mp3 = get_id_to_mp3()
+
+	# Filter out least common
+	#                   0  1  2. 3. 4. 5. 6  7. 8.  9. 10. 11. 12. 13. 14. 15. 16. 17. 18. 19. 20. 21. 22. 23  24. 25. 26. 27. 28. 29  30. 31
+	valid_labels = set([0, 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 14, 15, 16, 18, 19, 20, 23, 24, 26, 27, 28, 29, 30, 33, 36, 40, 42, 43, 45])
+
+	# Clip most common
+	threshold = 8000
+
+	label_counts = {}
+	song_to_label = {}
+	for song_id in ids:
+		tag = id_to_tag[song_id]
+		one_hot = []
+		valid = True
+		for label, boolean in enumerate(tag):
+			if boolean[0]:
+				label_counts[label] = label_counts.get(label, 0) + 1
+				if label_counts[label] > threshold:
+					valid = False
+					break
+			if label in valid_labels:
+				one_hot.append(int(boolean[0]))
+
+		if valid:
+			song = id_to_mp3[song_id]
+			song_to_label[song] = str(one_hot)
+
+	final_label_counts = {}
+	for one_hot in song_to_label.values():
+		for label, boolean in enumerate(eval(one_hot)):
+			if boolean:
+				final_label_counts[label] = final_label_counts.get(label, 0) + 1
+
+	print('final label dist:', final_label_counts)
+	print('num songs:', len(song_to_label))
+
+	filename = 'song_to_label.json'
+	print('saving:', filename)
+	with open(filename, 'w') as f:
+		json.dump(song_to_label, f)
+
+
+
+def get_genre_to_ids():
+	ids = get_all_ids()
+	id_to_tag = get_id_to_tag()
+	id_to_mp3 = get_id_to_mp3()
+
+
 	genres = [4, 9, 33, 0, 20, 11]
 	genre_count = {}
-	genre_to_song_ids = {}
+	genre_to_ids = {}
 	count = 0
 	for id in ids:
 		tag = id_to_tag[id]
@@ -124,32 +187,30 @@ def get_genres_to_song_ids():
 
 		if valid:
 			genre_count[matched_genre] = genre_count.get(matched_genre, 0) + 1
-			genre_to_song_ids[matched_genre] = genre_to_song_ids.get(matched_genre, []) + [id]
+			genre_to_ids[matched_genre] = genre_to_ids.get(matched_genre, []) + [id]
 		count += 1
 
 	# Remove half of the rock songs
 	genre_count[0] //= 2
-	genre_to_song_ids[0] = genre_to_song_ids[0][:genre_count[0]]
+	genre_to_ids[0] = genre_to_ids[0][:genre_count[0]]
 
 	print('genre counts:', genre_count)
 
-	return genre_to_song_ids
+	return genre_to_ids
 
-def save_genre_songs_to_ids():
-	path = ''
-
-	genre_to_song_ids = get_genres_to_song_ids()
-	ids_to_mp3s = get_id_to_mp3()
+def save_song_to_genre():
+	genre_to_id = get_genre_to_ids()
+	id_to_mp3 = get_id_to_mp3()
 
 	songs_to_genre = {}
-	for genre in genre_to_song_ids:
-		song_ids = genre_to_song_ids[genre]
+	for genre in genre_to_id:
+		song_ids = genre_to_ids[genre]
 		for song_id in song_ids:
-			song = ids_to_mp3s[song_id]
+			song = id_to_mp3[song_id]
 			song = song + '.mpy'
 			songs_to_genre[path + song] = genre
 
-	filename = 'genre_song_labels.json'
+	filename = 'song_to_genre.json'
 	print('saving:', filename)
 	with open(filename, 'w') as f:
 		json.dump(songs_to_genre, f)
@@ -157,20 +218,20 @@ def save_genre_songs_to_ids():
 
 def get_song_to_usage_emb():
 	id_to_usage_emb = cP.load(open('metadata/id_to_usage_emb.pkl', 'r'))
-	ids_to_mp3s = get_id_to_mp3()
+	id_to_mp3 = get_id_to_mp3()
 
 	song_to_usage_emb = {}
 	for song_id in id_to_usage_emb:
 		emb = id_to_usage_emb[song_id]
-		song = ids_to_mp3s[song_id]
+		song = id_to_mp3[song_id]
 		song = song + '.mpy'
 
 		song_to_usage_emb[song] = str(emb)
 
-	filename = 'usage_embs.json'
+	filename = 'song_to_usage_embs.json'
 	print('saving:', filename)
 	with open(filename, 'w') as f:
 		json.dump(song_to_usage_emb, f)
 
 
-get_song_to_usage_emb()
+save_song_to_label()

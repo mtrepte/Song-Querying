@@ -4,19 +4,21 @@ beta2 = .999
 decay_LR = True
 decay_LR_step = 1000 
 
+threshold = .5
+
 dropout_rate = .4
 L2_reg = 0.0001
 
 batch_size = 128
-num_classes = 5
+num_classes = 30
 
 num_steps = 100000
-display_step = 25
-save_step = 100
+display_step = 5
+save_step = 250
 
 train_percentile = .8
 
-train_with_usage_embs = False
+train_with_usage_embs = True
 usage_loss_weight = 50.
 
 embedding_dim = 128
@@ -31,4 +33,4 @@ file_vars = [(item, globals()[item]) for item in dir() if not item.startswith("_
 desc = ''
 for name, val in file_vars:
     if name not in blacklist:
-        desc += name + ' = '  + str(val) + '\n'
+        desc += name + ' = ' + str(val) + '\n'
