@@ -1,8 +1,5 @@
-data/spectrograms/sample/
-data/spectrograms/all/
-data/spectrograms/small/
+data/datasets/
 data/metadata/
 logs/
-data/audio/
-data/usage_embs.json
+data/song_to_usage_emb.json
 __pycache__/
