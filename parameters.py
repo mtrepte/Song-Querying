@@ -2,7 +2,7 @@ LR = .01
 beta1 = .9
 beta2 = .999
 decay_LR = True
-decay_LR_step = 1000 
+decay_LR_step = 2500
 
 threshold = .5
 
@@ -14,12 +14,12 @@ num_classes = 30
 
 num_steps = 100000
 display_step = 25
-save_step = 250
+save_step = 2500
 
 train_percentile = .8
 
 train_with_usage_embs = True
-usage_loss_weight = 50.
+usage_loss_weight = 100.
 
 embedding_dim = 128
 

@@ -7,8 +7,8 @@ from log import *
 class Model():
     def __init__(self, global_step):
         # Placeholders
-        self.x = tf.placeholder(tf.float32, shape=(None, 128, 300, 1))
-        # self.x = tf.placeholder(tf.float32, shape=(None, 256, 300, 1))
+        # self.x = tf.placeholder(tf.float32, shape=(None, 128, 300, 1))
+        self.x = tf.placeholder(tf.float32, shape=(None, 256, 200, 1))
         self.y = tf.placeholder(tf.int64, shape=(None, num_classes))
         self.usage_embs = tf.placeholder(tf.float32, shape=(None, 32))
 
@@ -53,13 +53,13 @@ class Model():
         # Dense Layer
         w4 = tf.Variable(tf.truncated_normal([flatten_dim, 128], stddev=0.1, dtype=tf.float32))
         b4 = tf.Variable(tf.constant(0.1, shape=[128], dtype=tf.float32))
-        dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w4) + b4), rate=self.dropout_rate)
+        dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w4) + b4), keep_prob=1-self.dropout_rate)
         print_log('dense layer shape:', dense.shape)
 
         # Dense Layer
         w4 = tf.Variable(tf.truncated_normal([flatten_dim, embedding_dim], stddev=0.1, dtype=tf.float32))
         b4 = tf.Variable(tf.constant(0.1, shape=[embedding_dim], dtype=tf.float32))
-        dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w4) + b4), rate=self.dropout_rate)
+        dense = tf.nn.dropout(tf.nn.relu(tf.matmul(reshape, w4) + b4), keep_prob=1-self.dropout_rate)
         print_log('dense layer shape:', dense.shape)
         self.embs = tf.nn.l2_normalize(dense, axis=1)
 
@@ -97,7 +97,7 @@ class Model():
             normalized_usage_embs = tf.nn.l2_normalize(self.usage_embs, axis=1)
             self.usage_loss = usage_loss_weight * tf.losses.mean_squared_error(normalized_usage_embs, self.usage_preds)
             # self.usage_loss = usage_loss_weight * tf.losses.mean_squared_error(self.usage_embs, self.usage_preds)
-            self.loss +=  self.usage_loss
+            self.loss += self.usage_loss
 
         # Optimization
         self.global_step = global_step

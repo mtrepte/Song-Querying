@@ -62,7 +62,7 @@ for step in range(num_steps):
             % (step, acc, precision, recall, loss, test_acc, test_precision, test_recall, test_loss, running_acc, running_precision, running_recall, running_loss))
         flush_file()
 
-    if step % save_step == 0:
+    if step % save_step == 0 and step > 0:
         save_model(saver, sess)
         save_embs(sess, model, train_x, test_x, train_y, test_y, train_names, test_names)
 

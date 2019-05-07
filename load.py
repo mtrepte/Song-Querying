@@ -30,6 +30,7 @@ def get_all_data():
     # data_path = 'data/datasets/goodspecs/'
     # data_path = 'data/datasets/all/'
     data_path = 'data/datasets/sample/'
+    # data_path = 'data/datasets/newspecs/'
     labels_path = 'data/song_to_label.json'
 
     count = 0
@@ -53,7 +54,7 @@ def get_all_data():
     return songs, labels, names
 
 def filter_data(songs, labels, names):
-    cutoff_length = 300
+    cutoff_length = 200
     label_counts = np.zeros(num_classes)
 
     filtered_songs = []; filtered_labels = []; filtered_names = []

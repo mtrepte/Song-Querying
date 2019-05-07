@@ -13,7 +13,12 @@ def save_embs(sess, model, train_x, test_x, train_y, test_y, train_names, test_n
     all_labels = np.concatenate([train_y, test_y], axis=0)
     all_names = np.concatenate([train_names, test_names], axis=0)
 
-    all_song_embs = sess.run(model.embs, feed_dict={model.x: all_songs})
+    all_song_embs = []
+    big_batch_size = 4096
+    for i in range(0, len(all_songs), big_batch_size):
+        song_batch = all_songs[i:i+big_batch_size]
+        emb_batch = sess.run(model.embs, feed_dict={model.x: song_batch})
+        all_song_embs.extend(emb_batch)
 
     save_dir = log_dir + '/saved/'
     save_song_embs(all_song_embs, all_names, save_dir)
