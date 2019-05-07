@@ -13,7 +13,7 @@ batch_size = 128
 num_classes = 30
 
 num_steps = 100000
-display_step = 5
+display_step = 25
 save_step = 250
 
 train_percentile = .8

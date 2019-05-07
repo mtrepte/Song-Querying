@@ -18,11 +18,13 @@ def get_data():
     train_x = songs[:index]
     train_y = labels[:index]
     train_embs = embs[:index]
+    train_names = names[:index]
     test_x = songs[index:]
     test_y = labels[index:]
     test_embs = embs[index:]
+    test_names = names[index:]
 
-    return train_x, train_y, test_x, test_y, train_embs, test_embs
+    return train_x, train_y, test_x, test_y, train_embs, test_embs, train_names, test_names
 
 def get_all_data():
     # data_path = 'data/datasets/goodspecs/'
@@ -34,7 +36,6 @@ def get_all_data():
     with open(labels_path) as f:
         song_label_pairs = json.load(f)
     song_label_pairs = list(song_label_pairs.items())
-    song_label_pairs = song_label_pairs[:20000]
 
     songs = []; labels = []; names = []
     for song_name, label in song_label_pairs:
@@ -48,8 +49,6 @@ def get_all_data():
         if count % 10000 == 0:
             print('loaded', count, '/', len(song_label_pairs))
         count += 1
-
-    print('using', len(songs), 'songs')
 
     return songs, labels, names
 
@@ -87,6 +86,8 @@ def preprocess_data(songs, labels, names):
     songs = songs[perm]
     labels = labels[perm]
     names = names[perm]
+
+    print('using', len(songs), 'songs')
 
     return songs, labels, names
 

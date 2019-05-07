@@ -3,19 +3,11 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="4fee195d-755d-464a-8a15-cc10aaf1fe8d" name="DGX" url="http://jensen.ist.berkeley.edu">
-        <fileTransfer host="jensen.ist.berkeley.edu" port="22" rootFolder="/home/ajaytanwani/PycharmProjects/object_recognition/" accessType="SFTP">
+        <fileTransfer host="jensen.ist.berkeley.edu" port="22" rootFolder="/home/ajaytanwani/matthew/Song-Querying" accessType="SFTP">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
           <option name="port" value="22" />
-        </fileTransfer>
-      </webServer>
-      <webServer id="fbd6005f-1dfe-432e-b653-705c93efb2ee" name="Triton2" url="http://128.32.192.73">
-        <fileTransfer host="128.32.192.73" port="8031" rootFolder="/object_recognition" accessType="SFTP">
-          <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
-          </advancedOptions>
-          <option name="port" value="8031" />
         </fileTransfer>
       </webServer>
     </option>

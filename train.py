@@ -13,7 +13,7 @@ from save import *
 
 np.set_printoptions(linewidth=250)
 
-train_x, train_y, test_x, test_y, train_embs, test_embs = get_data()
+train_x, train_y, test_x, test_y, train_embs, test_embs, train_names, test_names = get_data()
 
 global_step = tf.Variable(0, trainable=False, name='global_step')
 
@@ -64,7 +64,7 @@ for step in range(num_steps):
 
     if step % save_step == 0:
         save_model(saver, sess)
-        save_category_embs(sess, model, train_x, test_x, train_y, test_y)
+        save_embs(sess, model, train_x, test_x, train_y, test_y, train_names, test_names)
 
 save_model(saver, sess)
 
