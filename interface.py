@@ -1,37 +1,52 @@
 import numpy as np
+import json
 
 def cosine_similarity(vA, vB):
     return np.dot(vA, vB) / (np.sqrt(np.dot(vA,vA)) * np.sqrt(np.dot(vB,vB)))
 
+dir = 'final/'
+#with open(dir + 'final_song_to_emb.json') as f:
+#    song_to_emb = json.load(f)
+#
+#with open(dir + 'final_category_to_emb.json') as f:
+#    category_to_emb = json.load(f)
 
-song_embeddings = [np.array([])]
-name_to_embedding = {}
-embedding_to_name = {}
-category_embeddings = {
-    "genre1":np.array([])
-}
+categories = ['rock', 'pop', 'alternative', 'indie', 'electronic', 'female vocalists', 'dance', 'alternative rock', 'jazz', 'metal', 'chillout', 'classic rock', 'soul', 'indie rock', 'electronica', '80s', 'folk', 'instrumental', 'punk', 'blues', 'hard rock', 'ambient', 'acoustic', 'experimental', 'Hip-Hop', 'country', 'funk', 'heavy metal', 'Progressive rock', 'rnb']
 
+print("CATEGORIES")
+for i, category in enumerate(categories):
+    print(str(i) + ": " + category)
+print()
 print('seed_song - category_1 + category_2 ~= queried_songs\n')
-seed = input("Supply a seed song:")
-print("Categories:" + str(category_embeddings.keys()))
-cat_1 = input("Supply a category_1")
-cat_2 = input("Supply a category_2")
 
-try:
-    seed = name_to_embedding[seed]
-except:
-    print("invalid seed song supplied")
 
-try:
-    cat_1 = category_embeddings[cat_1]
-    cat_2 = category_embeddings[cat_2]
+while True:
+    seed = input("Supply a seed song:  ")
+    try:
+        seed = song_to_emb[seed]
+    except:
+        print("invalid seed song supplied")
+        continue
 
-except:
-    print("invalid category supplied")
+    cat_1 = input("Supply category_1:  ")
+    try:
+        cat_1 = category_to_emb[cat_1]
+    except:
+        print("invalid category supplied")
+        continue
 
-result = seed - cat_1 + cat_2
-result = result / np.linalg.norm(result)
+    cat_2 = input("Supply category_2:  ")
+    try:
+        cat_2 = category_to_emb[cat_2]
+    except:
+        print("invalid category supplied")
+        continue
 
-similarity_list = sorted(song_embeddings, key=lambda x: cosine_similarity(x, result))
-for embedding in similarity_list[0:5]:
-    print(embedding_to_name[embedding])
+    result = seed - cat_1 + cat_2
+    result = result / np.linalg.norm(result)
+    
+    song_emb_pairs = sorted(song_to_emb.items(), key=lambda x: cosine_similarity(x[1], result))
+    for song, emb in song_emb_pairs[:8]:
+        print(song, 'with cosine distance', cosine_similarity(emb, result))
+
+    
