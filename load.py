@@ -34,7 +34,6 @@ def get_all_data():
     with open(labels_path) as f:
         song_label_pairs = json.load(f)
     song_label_pairs = list(song_label_pairs.items())
-    song_label_pairs = song_label_pairs[:20000]
 
     songs = []; labels = []; names = []
     for song_name, label in song_label_pairs:
