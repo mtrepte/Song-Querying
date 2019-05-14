@@ -32,7 +32,9 @@ accs = []; losses = []; precisions = []; recalls = []
 for step in range(num_steps):
 
     rand_idx = np.random.randint(len(train_x), size=batch_size)
-    batch_x = train_x[rand_idx]; batch_y = train_y[rand_idx]; batch_embs = train_embs[rand_idx]
+    batch_x = train_x[rand_idx]; 
+    #rand_idx = np.random.randint(len(train_x), size=batch_size)
+    batch_y = train_y[rand_idx]; batch_embs = train_embs[rand_idx]
 
     sess.run(tf.local_variables_initializer())
     ops = [model.acc, model.precision, model.recall, model.loss, model.preds, model.train]
@@ -40,8 +42,10 @@ for step in range(num_steps):
 
     if step % display_step == 0:
         rand_idx = np.random.randint(len(test_x), size=1024)
-        test_batch_x = test_x[rand_idx]; test_batch_y = test_y[rand_idx]; test_batch_embs = test_embs[rand_idx]
-
+        test_batch_x = test_x[rand_idx];
+        #rand_idx = np.random.randint(len(test_x), size=1024)
+        test_batch_y = test_y[rand_idx]; test_batch_embs = test_embs[rand_idx]
+         
         sess.run(tf.local_variables_initializer())
         ops = [model.acc, model.precision, model.recall, model.loss, model.cross_entropy, model.L2_reg, model.usage_loss, model.preds]
         test_acc, test_precision, test_recall, test_loss, cross_entropy_loss, l2_reg_loss, usage_loss, test_preds = sess.run(ops, feed_dict={model.x: test_batch_x, model.y: test_batch_y, model.usage_embs: test_batch_embs})

@@ -8,13 +8,38 @@ from parameters import *
 from data import *
 from log import *
 
-def get_data():
-    songs, labels, names = get_all_data()
-    songs, labels, names = filter_data(songs, labels, names)
-    songs, labels, names = preprocess_data(songs, labels, names)
-    embs = get_usage_embs(names)
+def get_data_fast():
+    data_path = '../datasets/final/'
+    with open(data_path + 'finalspecsnames.txt') as f:
+        names = f.read().splitlines()
+        print(len(names), 'names loaded')
+    labels = np.load(data_path + 'finallabels.npy')
+    print(labels.shape, 'labels loaded')
+    embs = np.load(data_path + 'finalembs.npy')
+    print(embs.shape[0], 'embs loaded')
+    songs = np.memmap(data_path + 'specs.dat', dtype='float32', mode='r', shape=(len(names), 256, 200))
+    songs = songs[:,:,:,np.newaxis]
+
+    if log_spectrograms:
+        #songs = np.log(songs + 1e-7)
+        songs = librosa.power_to_db(songs)
+    if standard_normalize:
+        songs = (songs - np.mean(songs, axis=0)) / (np.std(songs, axis=0) + 1e-7)
+    #print(np.mean(songs, axis=0))
+    #print(np.std(songs, axis=0))    
+    return songs, labels, names, embs
+
+def get_data(fast=True):
+    if not fast:
+        songs, labels, names = get_all_data()
+        songs, labels, names = filter_data(songs, labels, names)
+        songs, labels, names = preprocess_data(songs, labels, names)
+        embs = get_usage_embs(names)
+    else:
+        songs, labels, names, embs = get_data_fast()
 
     index = int(len(songs) * train_percentile)
+    #index = 100
     train_x = songs[:index]
     train_y = labels[:index]
     train_embs = embs[:index]

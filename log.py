@@ -3,7 +3,7 @@ import os.path as osp, time, os
 from parameters import *
 
 time_stamp = time.strftime('%m-%d_%I-%M-%S')
-log_dir = 'logs/' + time_stamp
+log_dir = 'finals/' + time_stamp
 os.makedirs(log_dir)
 log_file = open(osp.join(log_dir, 'log.txt'), 'w')
 params_file = open(osp.join(log_dir, 'params.txt'), 'w')
